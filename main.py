@@ -20,17 +20,16 @@ def init_perplexity():
         return None
     return OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
 
-
+# ANALYZE IMAGE
 def analyze_img(gcv, img):
+    # Get GCV Response
     image=vision.Image(content=img)
     response=gcv.label_detection(image=image)
     
-    if response.error.message:
-        st.error(f"Error: {response.error.message}")
-        return
+    return response.label_annotations[0].description
+
+def determine_category(pp, img):
     
-    for label in response.label_annotations:
-        st.write(f"Description: {label.description}, Score: {label.score}")
     
 
 # MAIN FUNCTION
@@ -42,14 +41,19 @@ def main():
     gcv = init_google()
     pp = init_perplexity()
     
-    
+    # Get Image
     img = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     
     if img:
         with st.spinner("Analyzing image..."):
             img_bytes = img.read()
-            analyze_img(gcv, img_bytes)
-    
+            item = analyze_img(gcv, img_bytes)
+            
+            st.write(f"Detected Item: {item}")
+            
+            item_category = determine_category(pp, item)
+
+            
             
     
     
