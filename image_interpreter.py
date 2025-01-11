@@ -1,6 +1,7 @@
 from google.cloud import vision
 from google.oauth2 import service_account
 
+
 # Explicitly load the service account credentials
 credentials_path = ".streamlit/googlekey.json" # Change to your api key path
 credentials = service_account.Credentials.from_service_account_file(credentials_path)
