@@ -1,33 +1,21 @@
 from google.cloud import vision
-from google.cloud.vision import types
-import io
+from google.oauth2 import service_account
 
-# Path to your Google Cloud credentials file (JSON)
-# If you're using an API Key, you won't need this line
-# Set your GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of your credentials file
-# Example: export GOOGLE_APPLICATION_CREDENTIALS='/path/to/your/credentials.json'
+# Explicitly load the service account credentials
+credentials_path = "/Users/sashaampuero/Desktop/Hackathon/DeltaHacks_2025/deltahack2025-5eb312c9eedd.json" # Change to your api key path
+credentials = service_account.Credentials.from_service_account_file(credentials_path)
 
-# Initialize the Vision API client
-client = vision.ImageAnnotatorClient()
+# Pass the credentials to the Vision API client
+client = vision.ImageAnnotatorClient(credentials=credentials)
 
-# Open the image file you want to test (replace 'your_image.jpg' with your image path)
-with io.open('lion_test.jpg', 'rb') as image_file:
+# Test the client with a simple image annotation request
+file_path = "lion_test.jpg"
+with open(file_path, "rb") as image_file:
     content = image_file.read()
 
-# Create an image instance from the content
-image = types.Image(content=content)
-
-# Use the Vision API to analyze the image
+image = vision.Image(content=content)
 response = client.label_detection(image=image)
 
-# Get the labels returned by the Vision API
-labels = response.label_annotations
-
-# Print out the labels detected in the image
-print("Labels found in image:")
-for label in labels:
-    print(label.description)
-
-# Check for errors in the API response
-if response.error.message:
-    print(f"Error: {response.error.message}")
+# Print the detected labels
+for label in response.label_annotations:
+    print(f"Label: {label.description}, Score: {label.score}")
