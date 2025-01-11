@@ -1,0 +1,3 @@
+streamlit
+perplexityai
+google-cloud-vision
