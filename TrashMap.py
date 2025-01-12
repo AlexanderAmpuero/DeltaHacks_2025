@@ -2,22 +2,22 @@ import streamlit as st
 from openai import OpenAI
 from google.cloud import vision
 from google.oauth2 import service_account
+from streamlit_geolocation import streamlit_geolocation
 import json
 import re
 import pandas as pd
 import numpy as np
 import base64
 
-# FRONT END
-# Sidebar for user input
-st.sidebar.header("User Input")
-name = st.sidebar.text_input("What's Your Postal Code?", "XXX XXX")
 
+
+# FRONTEND
 # Title and Introduction
 st.title(":deciduous_tree: Trash Map :deciduous_tree:")
-st.markdown("""Welcome to Trash Map! This web app demonstrates basic components like text, user inputs, and charts.""")
+# st.markdown("""Welcome to Trash Map! This web app demonstrates basic components like text, user inputs, and charts.""")
 
 st.divider()
+
 
 # BACKEND
 # GOOGLE VISION CLIENT
@@ -37,7 +37,6 @@ def init_perplexity():
 
 # ANALYZE IMAGE
 def analyze_img(gcv, img):
-    
     try:
         # Get GCV Response
         image=vision.Image(content=img)
@@ -48,10 +47,7 @@ def analyze_img(gcv, img):
         return False
 
 # DETERMINE CATEGORY
-def determine_category(pp, item):
-    with open('category.json') as f:
-        categories = json.load(f)
-    
+def determine_category(pp, item, categories):
     messages = [
         {
             "role": "user",
@@ -69,10 +65,7 @@ def determine_category(pp, item):
         return False
     
 # NO CATEGORY
-def no_category(pp, item):
-    with open('category.json') as f:
-        categories = json.load(f)
-    
+def no_category(pp, item, categories):
     user_query = f"Explain to me why in 3 sentences or less, point form, why {item} is not in {categories}. You are a waste sorting algorithm"
     messages = [
         {
@@ -82,13 +75,13 @@ def no_category(pp, item):
     ]
     
     response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
-    st.write(response.choices[0].message.content)
+    instructions = response.choices[0].message.content
+    cleaned_instructions = re.sub(r'\[.*?\]', '', instructions).strip()
+    
+    st.write(cleaned_instructions)
     
 # DISPLAY INSTRUCTIONS
-def display_instructions(pp, item_category):
-    with open('category.json') as f:
-        categories = json.load(f)
-    
+def display_instructions(pp, item_category, categories):
     user_query = f"Explain to me in 3 sentences or less, point form, how to dispose of an item with key {item_category} in {categories}. Avoid using headings."
     messages = [
         {
@@ -103,22 +96,29 @@ def display_instructions(pp, item_category):
     
     st.write(cleaned_instructions)
 
+def get_location():
+    name = st.text_input("input text here")
+
 # MAIN FUNCTION
 def main():
+    
+    mapping = False
     
     # Initialize keys
     gcv = init_google()
     pp = init_perplexity()
     
     # Get image through either file or camera
-    # Get Image
     img = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-
     camera_image = st.camera_input("Take a picture")
     
     # After Image Submission
     if img or camera_image:
         with st.spinner("Analyzing image..."):
+            # Get JSON contents
+            with open('category.json') as f:
+                categories = json.load(f)
+            
             # Get Item
             img_bytes = img.read() if img else base64.b64encode(camera_image.getvalue()).decode('utf-8')
             item = analyze_img(gcv, img_bytes)
@@ -131,17 +131,24 @@ def main():
                 st.write(f"Detected Item: {item}")
             
             # Get Category
-            item_category = determine_category(pp, item)
+            item_category = determine_category(pp, item, categories)
             
             # No Category
             if item_category == False:
                 st.header("Cannot be Recycled")
-                no_category(pp, item)
+                no_category(pp, item, categories)
                 return
             
             # Instructions for Disposal
-            st.header("Recycling Insctructions")
-            display_instructions(pp, item_category)
+            st.header("Recycling Instructions")
+            display_instructions(pp, item_category, categories)
+            mapping = True
+
+    if mapping:
+        get_location()
+        
+        
+        
 
 if __name__ == "__main__":
     main()
