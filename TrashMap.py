@@ -92,7 +92,7 @@ st.markdown(
 
 # GOOGLE VISION CLIENT
 def init_google_cv():
-    credentials_path = "googlekey.json"
+    credentials_path = ".streamlit/googlekey.json"
     credentials = service_account.Credentials.from_service_account_file(credentials_path)
     client = vision.ImageAnnotatorClient(credentials=credentials)
     return client
