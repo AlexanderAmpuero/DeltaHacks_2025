@@ -1,4 +1,4 @@
-# DeltaHacks_2025
+# DeltaHacks_2025 
 This is sasha trying to work the cloning for the 3rd time :C
 This is martin trying for the first time :D
 
@@ -18,6 +18,8 @@ Verbwire - best use of AI & Verbwire API
 # Project Ideas
 Trip Planner - Map a route with EV Chargers (environment and community)
 
+# <p align="middle">🗑️Trash Map🗺️</p>
+🗑️A web app to identify waste items and find disposal locations for sustainability 🌳
 
 Trash Map is an AI-powered web app that helps users correctly identify waste items and provides recycling or disposal instructions based on recognized categories. With a user-friendly interface, this application leverages cutting-edge technologies to promote sustainability by guiding users on proper waste management.
 
