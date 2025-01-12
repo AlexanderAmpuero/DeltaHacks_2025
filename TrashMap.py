@@ -127,18 +127,20 @@ def main():
                 st.write("Error detecting item")
                 return
             
-            st.write(f"Detected Item: {item}")
+            with st.chat_message("user"):
+                st.write(f"Detected Item: {item}")
             
             # Get Category
             item_category = determine_category(pp, item)
             
             # No Category
             if item_category == False:
+                st.header("Cannot be Recycled")
                 no_category(pp, item)
                 return
             
             # Instructions for Disposal
-            st.write(f"Item Category: {item_category}")
+            st.header("Recycling Insctructions")
             display_instructions(pp, item_category)
 
 if __name__ == "__main__":
