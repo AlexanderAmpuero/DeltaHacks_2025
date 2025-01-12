@@ -80,7 +80,7 @@ def no_category(pp, item, categories):
     instructions = response.choices[0].message.content
     cleaned_instructions = re.sub(r'[.*?]', '', instructions).strip()
 
-    st.write(response.choices[0].message.content)
+    st.write(cleaned_instructions)
 
 # DISPLAY INSTRUCTIONS
 def display_instructions(pp, item_category, categories):
@@ -196,25 +196,45 @@ def main():
             gmaps = googlemaps.Client(key=API_KEY)
 
             # Example: Search for nearby places (e.g., restaurants within 1000 meters)
+            search_query = "Waste disposal centers"
+            if (item_category == "blue"):
+                search_query = "Recycling centers"
+            elif (item_category == "green"):
+                search_query = "Composting centers"
+            elif (item_category == "garbage"):
+                search_query = "Garbage waste disposal centers"
+            elif (item_category == "electronics"):
+                search_query = "Electronics waste disposal centers"
+            elif (item_category == "hazardous_waste"):
+                search_query = "Hazadous waste disposal centers"
+            elif (item_category == "clothing_donation"):
+                search_query = "Clothing donation centers"
+            
             places_result = gmaps.places_nearby(location=f"{latitude}, {longitude}", radius=10000, type=f'{item_category} waste disposal')
-            # Extract latitude and longitude for each place
+            
+            lats = []
+            lons = []
             if places_result["results"]:
-                lat = places_result["results"][0]["geometry"]["location"]["lat"]
-                lon = places_result["results"][0]["geometry"]["location"]["lng"]
+                for place in places_result["results"]:
+                    lat = place["geometry"]["location"]["lat"]
+                    lon = place["geometry"]["location"]["lng"]
+                    lats.append(lat)
+                    lons.append(lon)
             else:
-                st.write("No results found.")
+                st.error("No results found")
+            
 
             if latitude and longitude:
                 
                 # Now create a DataFrame for plotting
                 coordinates = {
-                    'lat': [lat, lat - 0.01],  # Latitude values
-                    'lon': [lon, lon - 0.01]  # Longitude values
+                    'lat': lats,  # Latitude values
+                    'lon': lons  # Longitude values
                 }
                 # Create a DataFrame
                 df = pd.DataFrame(coordinates)
                 # Header
-                st.header("Nearest Recycling Location")
+                st.header("Nearby Disposal Locations")
                 # Plot the coordinates on a map
                 st.map(df)
 
