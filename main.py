@@ -1,9 +1,9 @@
-
 import streamlit as st
 from openai import OpenAI
 from google.cloud import vision
 from google.oauth2 import service_account
 import json
+import re
 
 
 # GOOGLE VISION CLIENT
@@ -23,12 +23,17 @@ def init_perplexity():
 
 # ANALYZE IMAGE
 def analyze_img(gcv, img):
-    # Get GCV Response
-    image=vision.Image(content=img)
-    response=gcv.label_detection(image=image)
     
-    return response.label_annotations[0].description
+    try:
+        # Get GCV Response
+        image=vision.Image(content=img)
+        response=gcv.label_detection(image=image)
+        
+        return response.label_annotations[0].description
+    except:
+        return False
 
+# DETERMINE CATEGORY
 def determine_category(pp, item):
     with open('category.json') as f:
         categories = json.load(f)
@@ -36,16 +41,33 @@ def determine_category(pp, item):
     messages = [
         {
             "role": "user",
-            "content": f"You are a waste sorting assistant that identifies an item based on established categories. Identify items precisely. If an item does not fit into any category, return 'False'. Item: {item}. Categories: {categories}. Return precisely the name of the category and nothing else."
+            "content": f"You are a waste sorting assistant that identifies an item based on established categories. Identify items precisely. If an item does not fit into any category, return 'False'. Item: {item}. Categories: {categories}. You must respond with precisely the key of the category and nothing else."
         }
     ]
     
     response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
+    category = response.choices[0].message.content
+    cleaned_category = re.sub(r'\[.*?\]', '', category).strip()
+
+    if cleaned_category in categories:
+        return cleaned_category
+    else:
+        return False
     
-    st.write("Response from Perplexity")
-    st.write(response.choices[0])
+def no_category(pp, item):
+    with open('category.json') as f:
+        categories = json.load(f)
     
+    user_query = f"Explain to me why in 3 sentences or less, point form, why {item} is not in {categories}. You are a waste sorting algorithm"
+    messages = [
+        {
+            "role": "user",
+            "content": user_query
+        }
+    ]
     
+    response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
+    st.write(response.choices[0].message.content)
 
 # MAIN FUNCTION
 def main():
@@ -59,14 +81,30 @@ def main():
     # Get Image
     img = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     
+    # After Image Submission
     if img:
         with st.spinner("Analyzing image..."):
+            # Get Item
             img_bytes = img.read()
             item = analyze_img(gcv, img_bytes)
             
+            if item == False:
+                st.write("Error detecting item")
+                return
+            
             st.write(f"Detected Item: {item}")
             
+            # Get Category
             item_category = determine_category(pp, item)
+            
+            # No Category
+            if item_category == False:
+                no_category(pp, item)
+                return
+            
+            st.write(f"Item Category: {item_category}")
+            
+            # Map
             
             
 
