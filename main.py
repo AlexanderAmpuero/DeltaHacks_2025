@@ -3,6 +3,7 @@ import streamlit as st
 from openai import OpenAI
 from google.cloud import vision
 from google.oauth2 import service_account
+import json
 
 
 # GOOGLE VISION CLIENT
@@ -28,7 +29,21 @@ def analyze_img(gcv, img):
     
     return response.label_annotations[0].description
 
-def determine_category(pp, img):
+def determine_category(pp, item):
+    with open('category.json') as f:
+        categories = json.load(f)
+    
+    messages = [
+        {
+            "role": "user",
+            "content": f"You are a waste sorting assistant that identifies an item based on established categories. Identify items precisely. If an item does not fit into any category, return 'False'. Item: {item}. Categories: {categories}. Return precisely the name of the category and nothing else."
+        }
+    ]
+    
+    response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
+    
+    st.write("Response from Perplexity")
+    st.write(response.choices[0])
     
     
 
@@ -52,6 +67,8 @@ def main():
             st.write(f"Detected Item: {item}")
             
             item_category = determine_category(pp, item)
+            
+            
 
             
             
