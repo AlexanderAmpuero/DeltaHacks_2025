@@ -91,7 +91,7 @@ st.markdown(
 )
 
 # GOOGLE VISION CLIENT
-def init_google():
+def init_google_cv():
     credentials_path = ".streamlit/googlekey.json"
     credentials = service_account.Credentials.from_service_account_file(credentials_path)
     client = vision.ImageAnnotatorClient(credentials=credentials)
@@ -104,6 +104,22 @@ def init_perplexity():
         st.error("Please set Pp api key")
         return None
     return OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
+
+# GOOGLE GEOCODING
+def init_google_geocoding():
+    api_key = st.secrets['api_keys']['google_geocoding']
+    if not api_key:
+        st.error("Please set Pp api key")
+        return None
+    return api_key
+
+# GOOGLE PLACES
+def init_google_places():
+    api_key = st.secrets['api_keys']['google_places']
+    if not api_key:
+        st.error("Please set Pp api key")
+        return None
+    return api_key
 
 # CHECK POSTAL CODE
 def is_valid_postal_code(postal_code):
@@ -210,8 +226,10 @@ def main():
     st.divider()
 
     # Initialize keys
-    gcv = init_google()
+    gcv = init_google_cv()
     pp = init_perplexity()
+    ggc = init_google_geocoding()
+    gp = init_google_places()
     
     # Get postal code
     st.header("1. Enter your postal code")
@@ -264,15 +282,10 @@ def main():
             display_instructions(pp, item_category, categories)
 
             # Mapping Code
-            # Replace 'YOUR_API_KEY' with your actual API key for Google Geocoding
-            API_KEY = 'AIzaSyAOCuaXG6CsoWpopF7nJQwV0gZMNVfgxnU'
-            latitude, longitude = get_lat_lng(postal_code, API_KEY) # postal code lat and lon
-
-            # Replace 'YOUR_API_KEY' with your actual API key for google places
-            API_KEY = 'AIzaSyCbWRimxXzz13a-4Xmr_aeAK-EMBS0nFPQ'
+            latitude, longitude = get_lat_lng(postal_code, ggc) # postal code lat and lon
 
             # Initialize the client
-            gmaps = googlemaps.Client(key=API_KEY)
+            gmaps = googlemaps.Client(key=gp)
 
             # Example: Search for nearby places (e.g., restaurants within 1000 meters)
             search_query = "Waste disposal centers"
