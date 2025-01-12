@@ -96,24 +96,28 @@ def display_instructions(pp, item_category, categories):
     
     st.write(cleaned_instructions)
 
-def get_location():
-    name = st.text_input("input text here")
 
 # MAIN FUNCTION
 def main():
-    
-    mapping = False
     
     # Initialize keys
     gcv = init_google()
     pp = init_perplexity()
     
-    # Get image through either file or camera
-    img = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-    camera_image = st.camera_input("Take a picture")
+    # Get postal code
+    st.header("1. Enter your postal code")
+    postal_code = st.text_input("", label_visibility="collapsed")
+    
+    # Get image through either image or camera
+    st.header("2. Upload an image or take a photo")
+    img = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+    camera_image = st.camera_input("", label_visibility="collapsed")
+    
+    # Submit Button
+    submit = st.button("Submit")
     
     # After Image Submission
-    if img or camera_image:
+    if submit and postal_code and (img or camera_image):
         with st.spinner("Analyzing image..."):
             # Get JSON contents
             with open('category.json') as f:
@@ -144,8 +148,6 @@ def main():
             display_instructions(pp, item_category, categories)
             mapping = True
 
-    if mapping:
-        get_location()
         
         
         
