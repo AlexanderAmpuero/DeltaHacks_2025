@@ -10,15 +10,7 @@ import base64
 import requests  # Import requests for making API calls
 import googlemaps
 
-# FRONT END
 
-# Title and Introduction
-st.title(":deciduous_tree: Trash Map :deciduous_tree:")
-st.markdown("""Welcome to Trash Map! This web app demonstrates basic components like text, user inputs, and charts.""")
-
-st.divider()
-
-# BACKEND
 # GOOGLE VISION CLIENT
 def init_google():
     credentials_path = ".streamlit/googlekey.json"
@@ -34,6 +26,11 @@ def init_perplexity():
         return None
     return OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
 
+# CHECK POSTAL CODE
+def is_valid_postal_code(postal_code):
+    pattern = r'^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$' 
+    return bool(re.match(pattern, postal_code))
+
 # ANALYZE IMAGE
 def analyze_img(gcv, img):
     try:
@@ -46,7 +43,7 @@ def analyze_img(gcv, img):
         return False
 
 # DETERMINE CATEGORY
-def determine_category(pp, item):
+def determine_category(pp, item, categories):
     with open('category.json') as f:
         categories = json.load(f)
     
@@ -67,7 +64,7 @@ def determine_category(pp, item):
         return False
     
 # NO CATEGORY
-def no_category(pp, item):
+def no_category(pp, item, categories):
     with open('category.json') as f:
         categories = json.load(f)
     
@@ -80,14 +77,14 @@ def no_category(pp, item):
     ]
     
     response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
+    instructions = response.choices[0].message.content
+    cleaned_instructions = re.sub(r'[.*?]', '', instructions).strip()
+
     st.write(response.choices[0].message.content)
 
 # DISPLAY INSTRUCTIONS
-def display_instructions(pp, item_category):
-    with open('category.json') as f:
-        categories = json.load(f)
-    
-    user_query = f"Explain to me in 3 sentences or less, point form, how to dispose of an item with key {item_category} in {categories}. Avoid using headings."
+def display_instructions(pp, item_category, categories):
+    user_query = f"Explain to me in 3 sentences or less, point form, how to dispose of an item with key {item_category} in {categories}. Start your answer with {item_category}.name: To dispose of an item in this category..."
     messages = [
         {
             "role": "user",
@@ -129,48 +126,67 @@ def get_lat_lng(postal_code, api_key):
 
 # MAIN FUNCTION
 def main():
-    
+    # Title and Introduction
+    st.title(":deciduous_tree: Trash Map :deciduous_tree:")
+    st.divider()
+
     # Initialize keys
     gcv = init_google()
     pp = init_perplexity()
     
-    # Get image through either file or camera
-    # Get Image
-    img = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    # Get postal code
+    st.header("1. Enter your postal code")
+    postal_code = st.text_input("", label_visibility="collapsed")
 
-    camera_image = st.camera_input("Take a picture")
+    # Get image through either image or camera
+    st.header("2. Take a photo or upload an image")
+    camera_image = st.camera_input("", label_visibility="collapsed")
+    img = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+
+    # Submit Button
+    st.header("3. Get results")
+    submit = st.button("Submit", use_container_width=True)
     
     # After Image Submission
-    if img or camera_image:
+    if submit and postal_code and (img or camera_image):
+        # Get JSON contents
         with st.spinner("Analyzing image..."):
+            with open('category.json') as f:
+                categories = json.load(f)
+            
+            is_valid = is_valid_postal_code(postal_code)
+
+            if not is_valid:
+                st.error("Error with postal code")
+                return
+
             # Get Item
             img_bytes = img.read() if img else base64.b64encode(camera_image.getvalue()).decode('utf-8')
             item = analyze_img(gcv, img_bytes)
             
             if item == False:
-                st.write("Error detecting item")
+                st.error("Error detecting item")
                 return
             
             with st.chat_message("user"):
                 st.write(f"Detected Item: {item}")
             
             # Get Category
-            item_category = determine_category(pp, item)
+            item_category = determine_category(pp, item, categories)
             
             # No Category
             if item_category == False:
                 st.header("Cannot be Recycled")
-                no_category(pp, item)
+                no_category(pp, item, categories)
                 return
             
             # Instructions for Disposal
             st.header("Recycling Instructions")
-            display_instructions(pp, item_category)
+            display_instructions(pp, item_category, categories)
 
             # Mapping Code
             # Replace 'YOUR_API_KEY' with your actual API key for Google Geocoding
             API_KEY = 'AIzaSyAOCuaXG6CsoWpopF7nJQwV0gZMNVfgxnU'
-            postal_code = "K8V0C6"  # Use the postal code you need
             latitude, longitude = get_lat_lng(postal_code, API_KEY) # postal code lat and lon
 
             # Replace 'YOUR_API_KEY' with your actual API key for google places
@@ -192,13 +208,13 @@ def main():
                 
                 # Now create a DataFrame for plotting
                 coordinates = {
-                    'lat': [lat],  # Latitude values
-                    'lon': [lon]  # Longitude values
+                    'lat': [lat, lat - 0.01],  # Latitude values
+                    'lon': [lon, lon - 0.01]  # Longitude values
                 }
                 # Create a DataFrame
                 df = pd.DataFrame(coordinates)
-                # Title
-                st.title("Nearest Recycling Location")
+                # Header
+                st.header("Nearest Recycling Location")
                 # Plot the coordinates on a map
                 st.map(df)
 
