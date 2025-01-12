@@ -1,5 +1,6 @@
 # <p align="middle">🗑️Trash Map🗺️</p>
 ![Demo Image](./UI_images/demo.jpg)
+
 🗑️A web app to identify waste items and find disposal locations for sustainability 🌳
 
 Trash Map is an AI-powered web app that helps users correctly identify waste items and provides recycling or disposal instructions based on recognized categories. With a user-friendly interface, this application leverages cutting-edge technologies to promote sustainability by guiding users on proper waste management.
