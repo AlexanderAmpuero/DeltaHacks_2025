@@ -37,7 +37,7 @@ source .venv/bin/activate        - macOS/Linux
 pip install -r requirements.txt
 ```
 4. Optain the Following API Keys
-- Google Cloud Vision API Key
+- Google Cloud Vision Credentials
 - PerplexityAI API Key
 - Google Geocoding API Key
 - Google Places API Key
