@@ -1,5 +1,6 @@
 # <p align="middle">🗑️Trash Map🗺️</p>
-![Demo Image](./UI_images/demo.jpg)
+
+<p align="middle">![Demo Image](./UI_images/demo.jpg)</p>
 
 🗑️A web app to identify waste items and find disposal locations for sustainability 🌳
 
