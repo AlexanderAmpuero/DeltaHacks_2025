@@ -3,5 +3,3 @@ perplexityai
 google-cloud-vision
 googlemaps
 openai
-gcsfs==x.x.x
-st-files-connection
