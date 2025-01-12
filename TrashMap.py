@@ -5,10 +5,40 @@ from google.oauth2 import service_account
 import json
 import re
 import pandas as pd
-import numpy as np
 import base64
+import numpy as np
 import requests  # Import requests for making API calls
 import googlemaps
+import os
+
+# FRONT END
+
+# Construct the full file path to the image
+title_image_path = os.path.join(os.getcwd(), 'UI_images', 'Title.png')
+
+# Use the correct path in the HTML
+# Create the relative path to the static image
+static_path = "/UI_images/Title.png"
+
+# Function to convert image to base64
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode("utf-8")
+
+# Path to the image
+image_path = os.path.join(os.getcwd(), "UI_images", "Title.png")
+base64_image = get_base64_image(image_path)
+
+st.markdown(
+    f"""
+    <div style="text-align: center; position: relative; height: 100px;">
+        <img src="data:image/png;base64,{base64_image}" style="position: absolute; top: -320px; left: 40px; height: 800px;">
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown("""Welcome to Trash Map! Identify the type of trash and find the correct disposal bin using the web app!""")
 
 
 # GOOGLE VISION CLIENT
@@ -127,7 +157,6 @@ def get_lat_lng(postal_code, api_key):
 # MAIN FUNCTION
 def main():
     # Title and Introduction
-    st.title(":deciduous_tree: Trash Map :deciduous_tree:")
     st.divider()
 
     # Initialize keys
