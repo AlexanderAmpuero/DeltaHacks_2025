@@ -3,3 +3,4 @@ perplexityai
 google-cloud-vision
 googlemaps
 openai
+hi
