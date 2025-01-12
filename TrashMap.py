@@ -7,11 +7,10 @@ import re
 import pandas as pd
 import numpy as np
 import base64
+import requests  # Import requests for making API calls
+import googlemaps
 
 # FRONT END
-# Sidebar for user input
-st.sidebar.header("User Input")
-name = st.sidebar.text_input("What's Your Postal Code?", "XXX XXX")
 
 # Title and Introduction
 st.title(":deciduous_tree: Trash Map :deciduous_tree:")
@@ -37,7 +36,6 @@ def init_perplexity():
 
 # ANALYZE IMAGE
 def analyze_img(gcv, img):
-    
     try:
         # Get GCV Response
         image=vision.Image(content=img)
@@ -83,7 +81,7 @@ def no_category(pp, item):
     
     response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
     st.write(response.choices[0].message.content)
-    
+
 # DISPLAY INSTRUCTIONS
 def display_instructions(pp, item_category):
     with open('category.json') as f:
@@ -102,6 +100,32 @@ def display_instructions(pp, item_category):
     cleaned_instructions = re.sub(r'\[.*?\]', '', instructions).strip()
     
     st.write(cleaned_instructions)
+
+# GOOGLE GEOCODING API: Convert postal code to latitude and longitude
+def get_lat_lng(postal_code, api_key):
+    # Base URL for Google Geocoding API
+    url = "https://maps.googleapis.com/maps/api/geocode/json"
+    
+    # Parameters for the API request
+    params = {
+        "address": postal_code,
+        "key": api_key
+    }
+    
+    # Send GET request to the API
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        if len(data["results"]) > 0:
+            # Extract latitude and longitude
+            location = data["results"][0]["geometry"]["location"]
+            return location["lat"], location["lng"]
+        else:
+            st.write("No results found for the provided postal code.")
+            return None, None
+    else:
+        st.write(f"Error: {response.status_code}")
+        return None, None
 
 # MAIN FUNCTION
 def main():
@@ -140,36 +164,43 @@ def main():
                 return
             
             # Instructions for Disposal
-            st.header("Recycling Insctructions")
+            st.header("Recycling Instructions")
             display_instructions(pp, item_category)
 
             # Mapping Code
-            # Example coordinates
-            postal_code = "K8V 0C6"
-            user_query = f"convert this postal code: {postal_code} to lat and lon, \
-            then find the nearest lat and lon of the closest recycling facility for {item_category}, then return \
-            only the lat and lon of the recycling facility, don't show any of your work, just give the lat and lon"
-            messages = [
-                {
-                    "role": "user",
-                    "content": user_query
+            # Replace 'YOUR_API_KEY' with your actual API key for Google Geocoding
+            API_KEY = 'AIzaSyAOCuaXG6CsoWpopF7nJQwV0gZMNVfgxnU'
+            postal_code = "K8V0C6"  # Use the postal code you need
+            latitude, longitude = get_lat_lng(postal_code, API_KEY) # postal code lat and lon
+
+            # Replace 'YOUR_API_KEY' with your actual API key for google places
+            API_KEY = 'AIzaSyCbWRimxXzz13a-4Xmr_aeAK-EMBS0nFPQ'
+
+            # Initialize the client
+            gmaps = googlemaps.Client(key=API_KEY)
+
+            # Example: Search for nearby places (e.g., restaurants within 1000 meters)
+            places_result = gmaps.places_nearby(location=f"{latitude}, {longitude}", radius=10000, type=f'{item_category} waste disposal')
+            # Extract latitude and longitude for each place
+            if places_result["results"]:
+                lat = places_result["results"][0]["geometry"]["location"]["lat"]
+                lon = places_result["results"][0]["geometry"]["location"]["lng"]
+            else:
+                st.write("No results found.")
+
+            if latitude and longitude:
+                
+                # Now create a DataFrame for plotting
+                coordinates = {
+                    'lat': [lat],  # Latitude values
+                    'lon': [lon]  # Longitude values
                 }
-            ]
-            
-            response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
-            instructions = response.choices[0].message.content
-            st.write(instructions)
-            coordinates = {
-                'lat': [45.341944],  # Latitude values
-                'lon': [-75.783056]  # Longitude values
-            }
-            # Create a DataFrame
-            df = pd.DataFrame(coordinates)
-            # Title
-            st.title("Map of Coordinates")
-            # Plot the coordinates on a map
-            st.map(df)
+                # Create a DataFrame
+                df = pd.DataFrame(coordinates)
+                # Title
+                st.title("Nearest Recycling Location")
+                # Plot the coordinates on a map
+                st.map(df)
 
 if __name__ == "__main__":
     main()
-

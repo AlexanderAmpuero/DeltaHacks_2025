@@ -1,5 +1,9 @@
 import streamlit as st
 
+# Sidebar for user input
+st.sidebar.header("User Input")
+name = st.sidebar.text_input("What's Your Postal Code?", "XXX XXX")
+
 st.title("Frequently Asked Questions")
 
 # Expander for Frequently Asked Questions
