@@ -143,6 +143,33 @@ def main():
             st.header("Recycling Insctructions")
             display_instructions(pp, item_category)
 
+            # Mapping Code
+            # Example coordinates
+            postal_code = "K8V 0C6"
+            user_query = f"convert this postal code: {postal_code} to lat and lon, \
+            then find the nearest lat and lon of the closest recycling facility for {item_category}, then return \
+            only the lat and lon of the recycling facility, don't show any of your work, just give the lat and lon"
+            messages = [
+                {
+                    "role": "user",
+                    "content": user_query
+                }
+            ]
+            
+            response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
+            instructions = response.choices[0].message.content
+            st.write(instructions)
+            coordinates = {
+                'lat': [45.341944],  # Latitude values
+                'lon': [-75.783056]  # Longitude values
+            }
+            # Create a DataFrame
+            df = pd.DataFrame(coordinates)
+            # Title
+            st.title("Map of Coordinates")
+            # Plot the coordinates on a map
+            st.map(df)
+
 if __name__ == "__main__":
     main()
 
