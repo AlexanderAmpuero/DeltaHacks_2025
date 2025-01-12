@@ -4,8 +4,22 @@ from google.cloud import vision
 from google.oauth2 import service_account
 import json
 import re
+import pandas as pd
+import numpy as np
+import base64
 
+# FRONT END
+# Sidebar for user input
+st.sidebar.header("User Input")
+name = st.sidebar.text_input("What's Your Postal Code?", "XXX XXX")
 
+# Title and Introduction
+st.title(":deciduous_tree: Trash Map :deciduous_tree:")
+st.markdown("""Welcome to Trash Map! This web app demonstrates basic components like text, user inputs, and charts.""")
+
+st.divider()
+
+# BACKEND
 # GOOGLE VISION CLIENT
 def init_google():
     credentials_path = ".streamlit/googlekey.json"
@@ -91,21 +105,22 @@ def display_instructions(pp, item_category):
 
 # MAIN FUNCTION
 def main():
-    # Title
-    st.title("Recycling App")
     
     # Initialize keys
     gcv = init_google()
     pp = init_perplexity()
     
+    # Get image through either file or camera
     # Get Image
     img = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+    camera_image = st.camera_input("Take a picture")
     
     # After Image Submission
-    if img:
+    if img or camera_image:
         with st.spinner("Analyzing image..."):
             # Get Item
-            img_bytes = img.read()
+            img_bytes = img.read() if img else base64.b64encode(camera_image.getvalue()).decode('utf-8')
             item = analyze_img(gcv, img_bytes)
             
             if item == False:
@@ -125,20 +140,7 @@ def main():
             # Instructions for Disposal
             st.write(f"Item Category: {item_category}")
             display_instructions(pp, item_category)
-            
-            
-            
 
-            
-            
-    
-    
-    
-    
-    
-    
-    
-    
 if __name__ == "__main__":
     main()
 
