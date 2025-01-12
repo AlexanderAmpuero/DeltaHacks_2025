@@ -146,7 +146,9 @@ def main():
             # Mapping Code
             # Example coordinates
             postal_code = "K8V 0C6"
-            user_query = f"Give the lat and lon coordinates of the closest recycling disposal place within 100 km for {item}, my location is {postal_code}, make sure the lat and lon is precise, only the coordinates"
+            user_query = f"convert this postal code: {postal_code} to lat and lon, \
+            then find the nearest lat and lon of the closest recycling facility for {item_category}, then return \
+            only the lat and lon of the recycling facility, don't show any of your work, just give the lat and lon"
             messages = [
                 {
                     "role": "user",
