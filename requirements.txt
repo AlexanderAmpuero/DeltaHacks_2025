@@ -1,3 +1,4 @@
 streamlit
 perplexityai
 google-cloud-vision
+googlemaps

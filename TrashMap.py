@@ -2,12 +2,12 @@ import streamlit as st
 from openai import OpenAI
 from google.cloud import vision
 from google.oauth2 import service_account
+import numpy as np
+import pandas as pd
 import json
 import re
-import pandas as pd
 import base64
-import numpy as np
-import requests  # Import requests for making API calls
+import requests
 import googlemaps
 import os
 
