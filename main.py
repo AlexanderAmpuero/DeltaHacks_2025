@@ -54,6 +54,7 @@ def determine_category(pp, item):
     else:
         return False
     
+# NO CATEGORY
 def no_category(pp, item):
     with open('category.json') as f:
         categories = json.load(f)
@@ -68,6 +69,25 @@ def no_category(pp, item):
     
     response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
     st.write(response.choices[0].message.content)
+    
+# DISPLAY INSTRUCTIONS
+def display_instructions(pp, item_category):
+    with open('category.json') as f:
+        categories = json.load(f)
+    
+    user_query = f"Explain to me in 3 sentences or less, point form, how to dispose of an item with key {item_category} in {categories}. Avoid using headings."
+    messages = [
+        {
+            "role": "user",
+            "content": user_query
+        }
+    ]
+    
+    response = pp.chat.completions.create(model="llama-3.1-sonar-large-128k-online", messages=messages)
+    instructions = response.choices[0].message.content
+    cleaned_instructions = re.sub(r'\[.*?\]', '', instructions).strip()
+    
+    st.write(cleaned_instructions)
 
 # MAIN FUNCTION
 def main():
@@ -102,9 +122,10 @@ def main():
                 no_category(pp, item)
                 return
             
+            # Instructions for Disposal
             st.write(f"Item Category: {item_category}")
+            display_instructions(pp, item_category)
             
-            # Map
             
             
 
