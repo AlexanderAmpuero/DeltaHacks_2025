@@ -8,18 +8,9 @@ import re
 import pandas as pd
 import numpy as np
 import base64
+import ast
 
 
-
-# FRONTEND
-# Title and Introduction
-st.title(":deciduous_tree: Trash Map :deciduous_tree:")
-# st.markdown("""Welcome to Trash Map! This web app demonstrates basic components like text, user inputs, and charts.""")
-
-st.divider()
-
-
-# BACKEND
 # GOOGLE VISION CLIENT
 def init_google():
     credentials_path = ".streamlit/googlekey.json"
@@ -34,6 +25,11 @@ def init_perplexity():
         st.error("Please set Pp api key")
         return None
     return OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
+
+# CHECK POSTAL CODE
+def is_valid_postal_code(postal_code):
+    pattern = r'^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$' 
+    return bool(re.match(pattern, postal_code))
 
 # ANALYZE IMAGE
 def analyze_img(gcv, img):
@@ -82,7 +78,7 @@ def no_category(pp, item, categories):
     
 # DISPLAY INSTRUCTIONS
 def display_instructions(pp, item_category, categories):
-    user_query = f"Explain to me in 3 sentences or less, point form, how to dispose of an item with key {item_category} in {categories}. Avoid using headings."
+    user_query = f"Explain to me in 3 sentences or less, point form, how to dispose of an item with key {item_category} in {categories}. Start your answer with {item_category}.name: To dispose of an item in this category..."
     messages = [
         {
             "role": "user",
@@ -96,9 +92,48 @@ def display_instructions(pp, item_category, categories):
     
     st.write(cleaned_instructions)
 
+def getCoordinates(pp, postal_code, item_category, categories):
+    # Create prompt for location search
+    prompt = f"Find 3 locations near {postal_code} where I can dispose of an item with key of {item_category} in {categories}. Return ONLY ONLY ONLY ONLY ONLY a list of coordinates in format: [[lat1,lon1],[lat2,lon2],[lat3,lon3]]. DO NOT DO NOT DO NOT produce anything else."
+    
+    # Get response from Perplexity
+    response = pp.chat.completions.create(
+        model="llama-3.1-sonar-large-128k-online",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that provides coordinates for waste disposal locations. Respond ONLY with coordinates in the specified format."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+    
+    # Extract coordinates from response
+    coordinates_str = response.choices[0].message.content.strip()
+    
+
+    # Convert string representation of coordinates to list
+    coordinates = eval(coordinates_str)
+    
+    # Create DataFrame for mapping
+    df = pd.DataFrame({
+        'lat': [coord[0] for coord in coordinates],
+        'lon': [coord[1] for coord in coordinates]
+    })
+    
+    return df
+        
+
+    
 
 # MAIN FUNCTION
 def main():
+    # Title and Introduction
+    st.title(":deciduous_tree: Trash Map :deciduous_tree:")
+    st.divider()
     
     # Initialize keys
     gcv = init_google()
@@ -109,12 +144,13 @@ def main():
     postal_code = st.text_input("", label_visibility="collapsed")
     
     # Get image through either image or camera
-    st.header("2. Upload an image or take a photo")
-    img = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+    st.header("2. Take a photo or upload an image")
     camera_image = st.camera_input("", label_visibility="collapsed")
+    img = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
     
     # Submit Button
-    submit = st.button("Submit")
+    st.header("3. Get results")
+    submit = st.button("Submit", use_container_width=True)
     
     # After Image Submission
     if submit and postal_code and (img or camera_image):
@@ -123,12 +159,18 @@ def main():
             with open('category.json') as f:
                 categories = json.load(f)
             
+            is_valid = is_valid_postal_code(postal_code)
+            
+            if not is_valid:
+                st.error("Error with postal code")
+                return
+            
             # Get Item
             img_bytes = img.read() if img else base64.b64encode(camera_image.getvalue()).decode('utf-8')
             item = analyze_img(gcv, img_bytes)
             
             if item == False:
-                st.write("Error detecting item")
+                st.error("Error detecting item")
                 return
             
             with st.chat_message("user"):
@@ -146,11 +188,13 @@ def main():
             # Instructions for Disposal
             st.header("Recycling Instructions")
             display_instructions(pp, item_category, categories)
-            mapping = True
-
-        
-        
-        
+            
+            # Create Map
+            coordinates = getCoordinates(pp, postal_code, item_category, categories)
+            st.write(coordinates)
+            # df = pd.DataFrame(coordinates)
+            # st.map(df)
+            
 
 if __name__ == "__main__":
     main()

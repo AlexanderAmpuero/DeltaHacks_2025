@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import ast
+
 # Example coordinates
 coordinates = {
     'lat': [43.6672, 43.7709, 43.7412],  # Latitude values
@@ -11,3 +13,8 @@ df = pd.DataFrame(coordinates)
 st.title("Map of Coordinates")
 # Plot the coordinates on a map
 st.map(df)
+
+s = "[1, 2, 3]"
+
+lst = ast.literal_eval(s)
+print(lst)
