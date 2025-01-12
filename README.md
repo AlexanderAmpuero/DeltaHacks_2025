@@ -18,9 +18,6 @@ Trash Map is an AI-powered web app that helps users correctly identify waste ite
 - Pandas & NumPy: For handling and processing data (optional backend enhancements).
 - Base64 Encoding: To handle image uploads effectively.
 
-# Demo
-
-
 # Installation
 1. Clone the repository
 ```
