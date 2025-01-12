@@ -24,9 +24,33 @@ Trash Map is an AI-powered web app that helps users correctly identify waste ite
 # Installation
 1. Clone the repository
 ```
-Look! You can see my backticks.
+git clone https://github.com/AlexanderAmpuero/DeltaHacks_2025.git
 ```
 2. Set up a Python Virtual Environment
+```
+python -m venv .venv
+.venv\Scripts\activate           - Windows
+source .venv/bin/activate        - macOS/Linux
+```
 3. Install Required Dependencies
-4. Set Up API Keys
-5. Run the Application
+```
+pip install -r requirements.txt
+```
+4. Optain the Following API Keys
+- Google Cloud Vision API Key
+- PerplexityAI API Key
+- Google Geocoding API Key
+- Google Places API Key
+5. Set up the .streamlit/ folder
+- Add Google Cloud Vision credentials in .streamlit/googlekey.json
+- Add other keys to .streamlit/secrets.toml
+```
+[api_keys]
+perplexity = "INSERT KEY HERE"
+google_geocoding = "INSERT KEY HERE"
+google_places = "INSERT KEY HERE"
+```
+6. Run the Application
+```
+streamlit run TrashMap.py
+```
