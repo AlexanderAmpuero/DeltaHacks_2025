@@ -1,0 +1,91 @@
+{
+    "blue": {
+        "name": "Blue Bin - Recycling",
+        "description": "Materials accepted in the Blue Bin for recycling.",
+        "accepted_items": [
+            "paper (newspapers, magazines, flyers, etc.)",
+            "cardboard (clean boxes, cartons, etc.)",
+            "plastic containers (clean, labeled #1-7)",
+            "aluminum cans and foil",
+            "glass jars and bottles (clean, no lids)",
+            "tetra paks (juice and milk cartons)",
+            "metal food and beverage cans",
+            "plastic bags (clean and bundled)",
+            "empty aerosol cans",
+            "yogurt containers and lids"
+        ]
+    },
+    "green": {
+        "name": "Green Bin - Organics",
+        "description": "Materials accepted in the Green Bin for composting.",
+        "accepted_items": [
+            "fruit and vegetable scraps",
+            "meat, bones, and fish",
+            "dairy products",
+            "egg shells",
+            "coffee grounds and filters",
+            "tea bags",
+            "paper towels and napkins (soiled)",
+            "pizza boxes (soiled)",
+            "compostable bags and packaging",
+            "household plants (soil removed)"
+        ]
+    },
+    "garbage": {
+        "name": "Garbage - Landfill",
+        "description": "Non-recyclable and non-compostable waste.",
+        "accepted_items": [
+            "black plastic (non-recyclable)",
+            "chip bags and candy wrappers",
+            "ceramics and broken glass (safely wrapped)",
+            "styrofoam packaging",
+            "diapers and sanitary products",
+            "pet waste (in sealed plastic bags)",
+            "disposable masks and gloves",
+            "toothbrushes and razors",
+            "waxed or laminated paper",
+            "cotton balls and swabs"
+        ]
+    },
+    "electronics": {
+        "name": "Electronics Waste",
+        "description": "Electronic devices for recycling or proper disposal.",
+        "accepted_items": [
+            "computers and laptops",
+            "cell phones and tablets",
+            "televisions and monitors",
+            "printers and scanners",
+            "keyboards and mice",
+            "cables and chargers",
+            "stereos and speakers",
+            "small household appliances (toasters, kettles, etc.)"
+        ]
+    },
+    "hazardous_waste": {
+        "name": "Hazardous Waste",
+        "description": "Materials that require special disposal.",
+        "accepted_items": [
+            "batteries (household and car)",
+            "paint and solvents",
+            "light bulbs (CFLs, LEDs, fluorescent tubes)",
+            "cleaning products (bleach, ammonia, etc.)",
+            "motor oil and antifreeze",
+            "pesticides and fertilizers",
+            "aerosol cans (full or partially full)",
+            "propane tanks and cylinders",
+            "medications (returned to pharmacies)"
+        ]
+    },
+    "clothing_donation": {
+        "name": "Clothing and Textile Donation",
+        "description": "Textiles for donation or recycling.",
+        "accepted_items": [
+            "clothing (usable or worn)",
+            "shoes and boots (pairs preferred)",
+            "linens and towels",
+            "backpacks and bags",
+            "hats, gloves, and scarves",
+            "fabric scraps"
+        ]
+    }
+}
